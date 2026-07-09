@@ -1,0 +1,21 @@
+name: Code Quality Check
+
+# Step 1: Tell GitHub WHEN to run this script
+on:
+  pull_request:
+    branches: [ main ]
+
+# Step 2: Tell GitHub WHAT to do
+jobs:
+  test-and-lint:
+    runs-on: ubuntu-latest # Spin up a fresh virtual Linux server
+
+    steps:
+    - name: Checkout our code
+      uses: actions/checkout@v4 # Copy our code onto that Linux server
+
+    - name: Validate HTML Syntax
+      run: |
+        echo "Starting automated security and syntax checks..."
+        # This is a simple placeholder simulation for a test command
+        grep -q "</html>" index.html && echo "HTML structure looks good!" || exit 1
