@@ -1,21 +1,48 @@
-name: Code Quality Check
+name: CI/CD Pipeline
 
-# Step 1: Tell GitHub WHEN to run this script
 on:
+  push:
+    branches: [ main ] # Trigger deployment when code hits main
   pull_request:
-    branches: [ main ]
+    branches: [ main ] # Trigger tests when PR is opened
 
-# Step 2: Tell GitHub WHAT to do
+# Grant permissions required for GitHub Pages deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   test-and-lint:
-    runs-on: ubuntu-latest # Spin up a fresh virtual Linux server
-
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout our code
-      uses: actions/checkout@v4 # Copy our code onto that Linux server
+      uses: actions/checkout@v4
 
     - name: Validate HTML Syntax
       run: |
-        echo "Starting automated security and syntax checks..."
-        # This is a simple placeholder simulation for a test command
         grep -q "</html>" index.html && echo "HTML structure looks good!" || exit 1
+
+  deploy-to-pages:
+    needs: test-and-lint # ONLY run deployment if the tests pass!
+    if: github.ref == 'refs/heads/main' # Only deploy if code is merged into main
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+    - name: Checkout our code
+      uses: actions/checkout@v4
+
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: '.' # Upload our entire directory
+
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
